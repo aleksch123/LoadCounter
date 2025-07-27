@@ -86,14 +86,14 @@ class ScenariosTableModel extends AbstractTableModel {
         }
     }
     private int calculatePercentage(Scenario scenario) {
-        // Если сценарий неактивен, возвращаем 0
-        if (!scenario.isActive()) {
+        // Если сценарий неактивен или нет пользователей, возвращаем 0
+        if (!scenario.isActive() || totalRow.getUsersCount() == 0) {
             return 0;
         }
 
-        if (totalRow.getUsersCount() == 0) return 0;
         double percentage = (double)scenario.getUsersCount() / totalRow.getUsersCount() * 100;
-        return (int) Math.ceil(percentage);
+        //return (int) Math.ceil(percentage);
+        return (int) Math.round(percentage);
     }
     private int calculateTotalPercentage() {
         int sum = 0;
@@ -110,16 +110,20 @@ class ScenariosTableModel extends AbstractTableModel {
         Scenario scenario = scenarios.get(rowIndex);
         try {
             switch (columnIndex) {
-                case 0: scenario.setName((String)aValue); break;
-                case 1: scenario.setClassName((String)aValue); break;
+                case 0:
+                    scenario.setName((String)aValue);
+                    break;
+                case 1:
+                    scenario.setClassName((String)aValue);
+                    break;
                 case 2:
                     int newOps = Integer.parseInt(aValue.toString());
                     scenario.setOperationsPerHour(newOps);
                     if (scenario.getPacingTime() > 0) {
                         int newUsers = (int) Math.round(newOps / (60.0 / scenario.getPacingTime() * 60));
                         scenario.setUsersCount(newUsers);
-                        fireTableCellUpdated(rowIndex, 4);
-                        fireTableCellUpdated(rowIndex, 5); // Обновляем процент
+                        // Обновляем все зависимые значения
+                        updateAllDependentValues(rowIndex);
                     }
                     break;
                 case 3:
@@ -128,21 +132,27 @@ class ScenariosTableModel extends AbstractTableModel {
                     if (newPacing > 0) {
                         newOps = (int) Math.round((60.0 / newPacing * 60) * scenario.getUsersCount());
                         scenario.setOperationsPerHour(newOps);
-                        fireTableCellUpdated(rowIndex, 2);
+                        // Обновляем все зависимые значения
+                        updateAllDependentValues(rowIndex);
                     }
                     break;
                 case 4:
                     int newUsers = Integer.parseInt(aValue.toString());
                     scenario.setUsersCount(newUsers);
-                    fireTableCellUpdated(rowIndex, 5); // Обновляем процент
                     if (scenario.getPacingTime() > 0) {
                         newOps = (int) Math.round((60.0 / scenario.getPacingTime() * 60) * newUsers);
                         scenario.setOperationsPerHour(newOps);
-                        fireTableCellUpdated(rowIndex, 2);
                     }
+                    // Обновляем все зависимые значения
+                    updateAllDependentValues(rowIndex);
                     break;
                 case 6:
-                    scenario.setActive((Boolean)aValue);
+                    boolean newActive = (Boolean)aValue;
+                    scenario.setActive(newActive);
+                    // При деактивации обнуляем процент
+                    if (!newActive) {
+                        fireTableCellUpdated(rowIndex, 5);
+                    }
                     updateTotalRow();
                     break;
             }
@@ -150,6 +160,21 @@ class ScenariosTableModel extends AbstractTableModel {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error: " + e.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateAllDependentValues(int changedRow) {
+        // Обновляем процент для измененной строки
+        fireTableCellUpdated(changedRow, 5);
+
+        // Обновляем Total
+        updateTotalRow();
+
+        // Обновляем проценты для всех строк
+        for (int i = 0; i < scenarios.size()-1; i++) {
+            if (i != changedRow) { // Уже обновили текущую строку
+                fireTableCellUpdated(i, 5);
+            }
         }
     }
 
@@ -173,12 +198,12 @@ class ScenariosTableModel extends AbstractTableModel {
                     totalOps += s.getOperationsPerHour();
                     totalUsers += s.getUsersCount();
                 }
-                // Принудительно обновляем % для всех строк
-                fireTableCellUpdated(i, 5);
             }
 
             totalRow.setOperationsPerHour(totalOps);
             totalRow.setUsersCount(totalUsers);
+
+            // Обновляем отображение строки Total
             fireTableRowsUpdated(scenarios.size()-1, scenarios.size()-1);
         } finally {
             updating = false;

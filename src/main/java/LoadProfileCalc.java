@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LoadTestingApp extends JFrame {
+public class LoadProfileCalc extends JFrame {
     private JTable scenariosTable;
     private ScenariosTableModel tableModel;
     private JButton saveButton;
@@ -17,15 +17,17 @@ public class LoadTestingApp extends JFrame {
     private JButton removeButton;
     private File currentFile;
     private boolean isModified = false;
+    static String classPath;
 
-    public LoadTestingApp() {
+    public LoadProfileCalc() {
+        // classPath= classPath == null ?"src/main/resources/":classPath;
         setTitle("Load Testing Scenarios Calculator");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1000, 600);
         setLocationRelativeTo(null);
 
         initUI();
-        loadInitialData();
+        loadInitialData(classPath);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -35,51 +37,51 @@ public class LoadTestingApp extends JFrame {
     }
 
 
-        private void initUI() {
-            tableModel = new ScenariosTableModel();
-            scenariosTable = new JTable(tableModel);
+    private void initUI() {
+        tableModel = new ScenariosTableModel();
+        scenariosTable = new JTable(tableModel);
 
-            // Настройка столбца Active (индекс 6)
-            TableColumn activeColumn = scenariosTable.getColumnModel().getColumn(6);
-            activeColumn.setCellRenderer(new DefaultTableCellRenderer() {
-                private final JCheckBox checkBox = new JCheckBox();
-                {
-                    checkBox.setHorizontalAlignment(JLabel.CENTER);
-                    checkBox.setOpaque(true);
+        // Настройка столбца Active (индекс 6)
+        TableColumn activeColumn = scenariosTable.getColumnModel().getColumn(6);
+        activeColumn.setCellRenderer(new DefaultTableCellRenderer() {
+            private final JCheckBox checkBox = new JCheckBox();
+            {
+                checkBox.setHorizontalAlignment(JLabel.CENTER);
+                checkBox.setOpaque(true);
+            }
+
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus, int row, int column) {
+                if (value instanceof Boolean) {
+                    checkBox.setSelected((Boolean)value);
                 }
-
-                @Override
-                public Component getTableCellRendererComponent(JTable table, Object value,
-                                                               boolean isSelected, boolean hasFocus, int row, int column) {
-                    if (value instanceof Boolean) {
-                        checkBox.setSelected((Boolean)value);
-                    }
-                    if (isSelected) {
-                        checkBox.setBackground(table.getSelectionBackground());
-                        checkBox.setForeground(table.getSelectionForeground());
-                    } else {
-                        checkBox.setBackground(table.getBackground());
-                        checkBox.setForeground(table.getForeground());
-                    }
-                    return checkBox;
+                if (isSelected) {
+                    checkBox.setBackground(table.getSelectionBackground());
+                    checkBox.setForeground(table.getSelectionForeground());
+                } else {
+                    checkBox.setBackground(table.getBackground());
+                    checkBox.setForeground(table.getForeground());
                 }
-            });
+                return checkBox;
+            }
+        });
 
-            activeColumn.setCellEditor(new DefaultCellEditor(new JCheckBox()));
+        activeColumn.setCellEditor(new DefaultCellEditor(new JCheckBox()));
 
-            // Настройка столбца процентов (индекс 5)
-            TableColumn percentColumn = scenariosTable.getColumnModel().getColumn(5);
-            percentColumn.setCellRenderer(new DefaultTableCellRenderer() {
-                @Override
-                public Component getTableCellRendererComponent(JTable table, Object value,
-                                                               boolean isSelected, boolean hasFocus, int row, int column) {
-                    JLabel label = (JLabel) super.getTableCellRendererComponent(
-                            table, value, isSelected, hasFocus, row, column);
-                    label.setText(value != null ? value + "%" : "0%");
-                    label.setHorizontalAlignment(JLabel.RIGHT);
-                    return label;
-                }
-            });
+        // Настройка столбца процентов (индекс 5)
+        TableColumn percentColumn = scenariosTable.getColumnModel().getColumn(5);
+        percentColumn.setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = (JLabel) super.getTableCellRendererComponent(
+                        table, value, isSelected, hasFocus, row, column);
+                label.setText(value != null ? value + "%" : "0%");
+                label.setHorizontalAlignment(JLabel.RIGHT);
+                return label;
+            }
+        });
         JScrollPane scrollPane = new JScrollPane(scenariosTable);
 
         saveButton = new JButton("Save");
@@ -109,19 +111,24 @@ public class LoadTestingApp extends JFrame {
 
 
 
-    private void loadInitialData() {
-        //JFileChooser fileChooser = new JFileChooser();
-        //fileChooser.setDialogTitle("Open Scenarios File");
-        //fileChooser.setFileFilter(new FileNameExtensionFilter("Text Files", "txt"));
+    private void loadInitialData(String path) {
 
-        //int result = fileChooser.showOpenDialog(this);
-       // if (result == JFileChooser.APPROVE_OPTION) {
-            //currentFile = fileChooser.getSelectedFile();
-            currentFile = new File("C:\\Users\\aa.chizhikov\\IdeaProjects\\LoadCounter\\src\\main\\resources\\test.txt");
+        if (path==null) {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Open Scenarios File");
+            fileChooser.setFileFilter(new FileNameExtensionFilter("Text Files", "txt"));
+
+            int result = fileChooser.showOpenDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                currentFile = fileChooser.getSelectedFile();
+                loadDataFromFile(currentFile);
+            } else {
+                tableModel.setScenarios(new ArrayList<>());
+            }
+        }else {
+            currentFile = new File(path+ "profile.txt");
             loadDataFromFile(currentFile);
-       // } else {
-          //  tableModel.setScenarios(new ArrayList<>());
-       // }
+        }
     }
 
     private void loadDataFromFile(File file) {
@@ -224,8 +231,10 @@ public class LoadTestingApp extends JFrame {
     }
 
     public static void main(String[] args) {
+        if (args.length!=0) classPath=args[0];
+
         SwingUtilities.invokeLater(() -> {
-            LoadTestingApp app = new LoadTestingApp();
+            LoadProfileCalc app = new LoadProfileCalc();
             app.setVisible(true);
         });
     }
