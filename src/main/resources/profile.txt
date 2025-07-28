@@ -1,0 +1,5 @@
+Логин | Auth | 1200 | 30 | 10 | true
+Сценарий 1 | Scenario1 | 2400 | 3 | 2 | true
+Сценарий2 | Scenario2 | 2400 | 3 | 2 | true
+Сценарий 3 | Scenario3 | 7714 | 14 | 30 | true
+Создание шаблона | Template | 720 | 10 | 2 | true

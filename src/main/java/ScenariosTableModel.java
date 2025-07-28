@@ -5,7 +5,7 @@ import java.util.List;
 
 class ScenariosTableModel extends AbstractTableModel {
     private final String[] columnNames = {
-            "Scenario Name", "Class Name", "Operations/Hour", "Pacing (sec)", "Users Count","%", "Active"
+            "Scenario Name", "Group Name", "Operations/Hour", "Pacing (sec)", "Users Count","%", "Active"
     };
 
     private final Class<?>[] columnTypes = {
