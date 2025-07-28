@@ -31,7 +31,7 @@
 | Operations/Hour   | Integer   | `(3600 / Pacing) * Users Count`    |
 | Pacing Time (sec) | Integer   | `3600 / (Operations/Hour / Users)` |
 | Users Count       | Integer   | `Operations/Hour / (3600 / Pacing)`|
-| % Load           | Integer   | `(Users Count / Total Users) * 100`|
+| % User            | Integer   | `(Users Count / Total Users) * 100`|
 
 ### Ключевые возможности
 - Автоматический пересчет при изменении данных
