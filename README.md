@@ -48,3 +48,6 @@
 2. Сборка:
 ```bash
 mvn clean package
+```
+
+![Screenshot](images/Screenshot.jpg)
