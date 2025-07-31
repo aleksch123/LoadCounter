@@ -5,7 +5,7 @@ import java.util.List;
 
 class ScenariosTableModel extends AbstractTableModel {
     private final String[] columnNames = {
-            "Scenario Name", "Group Name", "Operations/Hour", "Pacing (sec)", "Users Count","%", "Active"
+            "Scenario Name", "Group Name", "Ops/Hour", "Pacing (sec)", "Users Count","%", "Active"
     };
 
     private final Class<?>[] columnTypes = {
@@ -130,7 +130,7 @@ class ScenariosTableModel extends AbstractTableModel {
                     int newPacing = Integer.parseInt(aValue.toString());
                     scenario.setPacingTime(newPacing);
                     if (newPacing > 0) {
-                        newOps = (int) Math.round((60.0 / newPacing * 60) * scenario.getUsersCount());
+                         newOps = (int) Math.round((60.0 / newPacing * 60) * scenario.getUsersCount());
                         scenario.setOperationsPerHour(newOps);
                         // Обновляем все зависимые значения
                         updateAllDependentValues(rowIndex);
@@ -209,4 +209,4 @@ class ScenariosTableModel extends AbstractTableModel {
             updating = false;
         }
     }
-}
+    }

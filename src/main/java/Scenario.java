@@ -1,4 +1,4 @@
-class Scenario {
+public class Scenario {
     private String name;
     private String className;
     private int operationsPerHour;
